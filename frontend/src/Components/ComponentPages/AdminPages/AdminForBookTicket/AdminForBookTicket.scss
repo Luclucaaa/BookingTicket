@@ -1,0 +1,118 @@
+.admin-booking-page {
+  min-height: 100vh;
+  background: var(--bodyColor);
+  padding: 2.5rem 3rem;
+  font-family: "Inter", sans-serif;
+  color: var(--blackColor);
+
+  .admin-booking-header {
+    text-align: left;
+    margin-bottom: 2rem;
+
+    .breadcrumb {
+      font-size: 0.9rem;
+      color: var(--greyText);
+      margin-bottom: 1rem;
+
+      a {
+        color: var(--greyText);
+        text-decoration: none;
+        transition: all 0.3s ease;
+
+        &:hover {
+          color: var(--PrimaryColor);
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 0.4rem;
+
+      .title-icon {
+        font-size: 1.8rem;
+        color: var(--PrimaryColor);
+      }
+
+      h1 {
+        font-size: 1.9rem;
+        font-weight: 700;
+        color: var(--blackColor);
+      }
+    }
+
+    .header-subtitle {
+      font-size: 1rem;
+      color: var(--textColor);
+    }
+  }
+
+  .admin-booking-content {
+    display: flex;
+    justify-content: center;
+    flex-grow: 1;
+    padding-bottom: 3rem;
+
+    .booking-card {
+      width: 100%;
+      max-width: 920px;
+      background: var(--whiteColor);
+      border-radius: 1.2rem;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+      padding: 2.5rem 3rem;
+      border: 1px solid var(--cardBG);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
+      }
+
+      &:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at top right,
+          rgba(30, 144, 255, 0.08),
+          transparent 70%
+        );
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+
+      &:hover::before {
+        opacity: 1;
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--cardBG);
+        padding-bottom: 0.8rem;
+
+        .card-icon {
+          font-size: 1.4rem;
+          color: var(--SecondaryColor);
+        }
+
+        .card-title {
+          font-size: 1.3rem;
+          font-weight: 600;
+          color: var(--blackColor);
+        }
+      }
+
+      @media (max-width: 768px) {
+        padding: 1.5rem;
+      }
+    }
+  }
+}

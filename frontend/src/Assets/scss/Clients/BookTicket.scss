@@ -1,0 +1,43 @@
+@use "../variables.scss";
+
+.trip-results {
+  background: #f8fafc;
+  min-height: 100vh;
+  padding: 1rem 0;
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+
+  .results-wrapper {
+    background: #fff;
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    padding: 1rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  // ================= RESPONSIVE =================
+  @media (max-width: 768px) {
+    .results-wrapper {
+      padding: 1.5rem;
+    }
+
+    .trip-info h1 {
+      font-size: 1.25rem;
+    }
+
+    .filters {
+      flex-direction: column;
+
+      .filter-item {
+        width: 100%;
+      }
+    }
+  }
+}

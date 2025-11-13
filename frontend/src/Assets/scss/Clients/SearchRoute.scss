@@ -1,0 +1,144 @@
+@use "../variables.scss";
+
+.search-route-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 2rem;
+
+  .filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    input {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+      outline: none;
+      font-size: 14px;
+
+      &:focus {
+        border-color: hsl(199, 100%, 33%);
+      }
+    }
+  }
+
+  .route-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .route-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #ddd;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      background: #fff;
+      transition: box-shadow 0.3s ease;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .col {
+        text-align: center;
+        flex: 1;
+
+        &.route-name {
+          flex: 2;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+
+          .route-start,
+          .route-end {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 0.25rem;
+
+            .label {
+              font-weight: 600;
+              color: #1976d2; // xanh cho điểm đi
+            }
+
+            .text {
+              font-weight: 500;
+              color: #ff5722; // cam cho điểm đến
+            }
+
+            .highlight {
+              background: yellow;
+              border-radius: 3px;
+              padding: 0 2px;
+            }
+          }
+        }
+
+        &.distance,
+        &.time,
+        &.price {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.25rem;
+          font-weight: 600;
+        }
+
+        &.action {
+          flex: 1.5;
+          display: flex;
+          justify-content: center;
+
+          .btn {
+            background: hsl(199, 100%, 33%);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+
+            &:hover {
+              background: hsl(187, 85%, 43%);
+            }
+          }
+        }
+      }
+    }
+
+    .no-data {
+      text-align: center;
+      color: #888;
+      font-style: italic;
+      padding: 1rem 0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .route-card {
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .col {
+        flex: none;
+        width: 100%;
+      }
+
+      .col.action {
+        justify-content: flex-start;
+      }
+    }
+
+    .filters {
+      flex-direction: column;
+
+      input {
+        width: 100%;
+      }
+    }
+  }
+}
