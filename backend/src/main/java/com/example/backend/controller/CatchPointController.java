@@ -1,0 +1,173 @@
+package com.example.backend.controller;
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import com.example.backend.dto.LogDTO;
+import com.example.backend.dto.CatchPointDTO;
+import com.example.backend.exception.ResourceNotFoundException;
+import com.example.backend.model.CatchPoint;
+import com.example.backend.service.LogService;
+import com.example.backend.service.CatchPointService;
+import com.example.backend.utils.JwtTokenUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("api/catch-point")
+@CrossOrigin("http://localhost:3000")
+public class CatchPointController {
+    private CatchPointService catchPointService;
+    @Autowired
+    private JwtTokenUtils jwtTokenUtils;
+    @Autowired
+    private LogService logService;
+
+    public CatchPointController(CatchPointService catchPointService) {
+        this.catchPointService = catchPointService;
+    }
+
+    // Get all CatchPoint
+    @GetMapping
+    public List<CatchPoint> getAllCatchPoints(){
+        return catchPointService.getAllCatchPoint();
+    }
+
+    // Get CatchPoints by routeId
+    @GetMapping("/route/{routeId}")
+    public ResponseEntity<List<CatchPoint>> getCatchPointsByRouteId(@PathVariable("routeId") int routeId) {
+        return new ResponseEntity<>(catchPointService.getCatchPointsByRouteId(routeId), HttpStatus.OK);
+    }
+
+    // Create a new CatchPoint
+    @PostMapping
+    public ResponseEntity<CatchPoint> createCatchPoint(@RequestBody CatchPointDTO catchPointDTO, HttpServletRequest request){
+        String token = jwtTokenUtils.extractJwtFromRequest(request);
+        if (token == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if (jwtTokenUtils.isTokenExpired(token)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        int userId = jwtTokenUtils.extractUserId(token);
+        Integer userRole = jwtTokenUtils.extractRole(token);
+
+        if (userRole == null ||  (userRole != 2 && userRole != 3)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        try {
+            CatchPoint createdCatchPoint = catchPointService.createCatchPoint(catchPointDTO);
+
+            // Ghi log sau khi tạo thành công
+            LogDTO logData = logService.convertToLogDTO(userId, "Tạo điểm đón của tuyến: " + catchPointDTO.getRouteId(), 1);
+            logService.createLog(logData);
+
+            return new ResponseEntity<>(createdCatchPoint, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Get CatchPoint by id
+    @GetMapping("{id}")
+    public ResponseEntity<CatchPoint> getCatchPointById(@PathVariable ("id") int id){
+        return new ResponseEntity<>(catchPointService.getCatchPointByID(id), HttpStatus.OK);
+    }
+
+
+    // phân trang
+    @GetMapping("page")
+    public ResponseEntity<Map<String, Object>> getAllCatchPointByPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer routeId) {
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        Page<CatchPoint> catchPointPage = catchPointService.getAllCatchPointPage(address, name, routeId, pageable);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("catchPoints", catchPointPage.getContent());
+        response.put("currentPage", catchPointPage.getNumber() + 1);
+        response.put("totalItems", catchPointPage.getTotalElements());
+        response.put("totalPages", catchPointPage.getTotalPages());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+    // Update CatchPoint by id
+    @PutMapping("{id}")
+    public ResponseEntity<CatchPoint> updateCatchPointById(@PathVariable ("id") int id, @RequestBody CatchPointDTO catchPointDTO, HttpServletRequest request){
+        String token = jwtTokenUtils.extractJwtFromRequest(request);
+        if (token == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if (jwtTokenUtils.isTokenExpired(token)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        int userId = jwtTokenUtils.extractUserId(token);
+        Integer userRole = jwtTokenUtils.extractRole(token);
+
+        if (userRole == null ||  (userRole != 2 && userRole != 3)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        try {
+            CatchPoint updatedCatchPoint = catchPointService.updateCatchPointByID(catchPointDTO, id);
+
+            // Ghi log sau khi cập nhật thành công
+            LogDTO logData = logService.convertToLogDTO(userId, "Cập nhật điểm đón Id: " + id, 2);
+            logService.createLog(logData);
+
+            return new ResponseEntity<>(updatedCatchPoint, HttpStatus.OK);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Delete CatchPoint by id
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> deleteCatchPointById(@PathVariable ("id") int id, HttpServletRequest request){
+        String token = jwtTokenUtils.extractJwtFromRequest(request);
+        if (token == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if (jwtTokenUtils.isTokenExpired(token)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        int userId = jwtTokenUtils.extractUserId(token);
+        Integer userRole = jwtTokenUtils.extractRole(token);
+
+        if (userRole == null ||  (userRole != 2 && userRole != 3)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        try {
+            catchPointService.deleteCatchPointByID(id);
+
+            // Ghi log sau khi hành động thành công
+            LogDTO logData = logService.convertToLogDTO(userId, "Xóa điểm đón Id: " + id, 2);
+            logService.createLog(logData);
+
+            return new ResponseEntity<>("CatchPoint " + id + " is deleted successfully", HttpStatus.OK);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>("CatchPoint " + id + " not found", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+}

@@ -1,0 +1,103 @@
+package com.example.backend.service.impl;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import com.example.backend.dto.CatchPointDTO;
+import com.example.backend.exception.ResourceNotFoundException;
+import com.example.backend.model.CatchPoint;
+import com.example.backend.model.Route;
+import com.example.backend.model.Trip;
+import com.example.backend.model.User;
+import com.example.backend.repository.CatchPointRepository;
+import com.example.backend.repository.RouteRepository;
+import com.example.backend.repository.TripRepository;
+import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.specification.CatchPointSpecification;
+import com.example.backend.repository.specification.TripSpecifications;
+import com.example.backend.service.CatchPointService;
+import com.example.backend.service.CatchPointService;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+public class CatchPointServiceImpl implements CatchPointService {
+    private CatchPointRepository catchPointRepository;
+    private RouteRepository routeRepository;
+
+//    public CatchPointServiceImpl(CatchPointRepository CatchPointRepository) {
+//        this.CatchPointRepository = CatchPointRepository;
+//    }
+
+
+    public CatchPointServiceImpl(CatchPointRepository catchPointRepository, RouteRepository routeRepository) {
+        this.catchPointRepository = catchPointRepository;
+        this.routeRepository = routeRepository;
+    }
+
+    @Override
+    public CatchPoint createCatchPoint(CatchPointDTO catchPointDTO) {
+        CatchPoint catchPoint = new CatchPoint();
+        Route route =  routeRepository.findById(catchPointDTO.getRouteId()).orElseThrow(() ->
+                new ResourceNotFoundException("Route", "Id", catchPointDTO.getRouteId()));
+        catchPoint.setRoute(route);
+        catchPoint.setName(catchPointDTO.getName());
+        catchPoint.setAddress(catchPointDTO.getAddress());
+        catchPoint.setCreatedAt(LocalDateTime.now());
+        catchPoint.setUpdatedAt(LocalDateTime.now());
+        return catchPointRepository.save(catchPoint);
+    }
+
+    @Override
+    public List<CatchPoint> getAllCatchPoint() { return catchPointRepository.findAll();}
+
+    @Override
+    public CatchPoint getCatchPointByID(int id) {
+        return catchPointRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("CatchPoint", "Id", id));
+    }
+
+    // get CatchPoint by userId
+//    @Override
+//    public List<CatchPoint> getCatchPointByUserId(int userId) {
+//        return CatchPointRepository.findByUserId(userId);
+//    }
+
+    @Override
+    public Page<CatchPoint> getAllCatchPointPage(String address, String name, Integer routeId, Pageable pageable) {
+        Specification<CatchPoint> spec = Specification.where(CatchPointSpecification.hasAddress(address))
+                .and(CatchPointSpecification.hasName(name))
+                .and(CatchPointSpecification.hasRouteId(routeId));
+
+        return catchPointRepository.findAll(spec, pageable);
+    }
+
+
+    @Override
+    public List<CatchPoint> getCatchPointsByRouteId(int routeId) {
+        return catchPointRepository.findByRouteId(routeId);
+    }
+
+    @Override
+    public CatchPoint updateCatchPointByID(CatchPointDTO catchPointDTO, int id) {
+        CatchPoint existingCatchPoint = catchPointRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("CatchPoint", "Id", id));
+        Route route =  routeRepository.findById(catchPointDTO.getRouteId()).orElseThrow(() ->
+                new ResourceNotFoundException("Route", "Id", catchPointDTO.getRouteId()));
+        existingCatchPoint.setRoute(route);
+        existingCatchPoint.setName(catchPointDTO.getName());
+        existingCatchPoint.setAddress(catchPointDTO.getAddress());
+        existingCatchPoint.setUpdatedAt(LocalDateTime.now());
+        return catchPointRepository.save(existingCatchPoint);
+    }
+
+    @Override
+    public void deleteCatchPointByID(int id) {
+        catchPointRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("CatchPoint", "Id", id));
+        catchPointRepository.deleteById(id);
+    }
+}

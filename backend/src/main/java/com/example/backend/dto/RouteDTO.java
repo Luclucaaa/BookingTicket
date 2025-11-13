@@ -1,0 +1,20 @@
+package com.example.backend.dto;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+public class RouteDTO {
+    private int id;
+    private String name;
+    private int diemdi;
+    private int diemden;
+    private String khoangCach;
+    private String timeOfRoute;
+    private int status;
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
+}

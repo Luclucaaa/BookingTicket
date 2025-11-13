@@ -1,0 +1,17 @@
+package com.example.backend.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
+import com.example.backend.model.Seat;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface SeatRepository extends JpaRepository<Seat, Integer>, JpaSpecificationExecutor<Seat> {
+    List<Seat> findAllByKindVehicleId(int kindVehicleId);
+    Optional<Seat> findByName(String name);
+    // Tìm tất cả Seat theo tên ghế + kindVehicleId
+    List<Seat> findByNameAndKindVehicle_Id(String name, int kindVehicleId);
+}

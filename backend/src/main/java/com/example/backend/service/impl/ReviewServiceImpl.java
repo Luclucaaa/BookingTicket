@@ -1,0 +1,111 @@
+package com.example.backend.service.impl;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import com.example.backend.dto.ReviewDTO;
+import com.example.backend.exception.ResourceNotFoundException;
+import com.example.backend.model.Booking;
+import com.example.backend.model.Review;
+import com.example.backend.model.Trip;
+import com.example.backend.model.User;
+import com.example.backend.repository.ReviewRepository;
+import com.example.backend.repository.TripRepository;
+import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.specification.ReviewSpecifications;
+import com.example.backend.repository.specification.TripSpecifications;
+import com.example.backend.service.ReviewService;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+public class ReviewServiceImpl implements ReviewService {
+    private ReviewRepository reviewRepository;
+    private TripRepository tripRepository;
+    private UserRepository userRepository;
+
+//    public ReviewServiceImpl(ReviewRepository ReviewRepository) {
+//        this.ReviewRepository = ReviewRepository;
+//    }
+
+
+    public ReviewServiceImpl(ReviewRepository reviewRepository, TripRepository tripRepository, UserRepository userRepository) {
+        this.reviewRepository = reviewRepository;
+        this.tripRepository = tripRepository;
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public Review createReview(ReviewDTO reviewDTO) {
+        Review review = new Review();
+        User user = userRepository.findById(reviewDTO.getUserId()).orElseThrow(() ->
+                new ResourceNotFoundException("User", "Id", reviewDTO.getUserId()));
+        Trip trip =  tripRepository.findById(reviewDTO.getTripId()).orElseThrow(() ->
+                new ResourceNotFoundException("Trip", "Id", reviewDTO.getTripId()));
+        review.setTrip(trip);
+        review.setUser(user);
+        review.setRating(reviewDTO.getRating());
+        review.setContent(reviewDTO.getContent());
+        review.setCreatedAt(LocalDateTime.now());
+        review.setUpdatedAt(LocalDateTime.now());
+        return reviewRepository.save(review);
+    }
+
+    @Override
+    public List<Review> getAllReview() { return reviewRepository.findAll();}
+
+    @Override
+    public Review getReviewByID(int id) {
+        return reviewRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("Review", "Id", id));
+    }
+
+    // get review by userId
+    @Override
+    public List<Review> getReviewByUserId(int userId) {
+        return reviewRepository.findByUserId(userId);
+    }
+
+    @Override
+    public Page<Review> getAllReviewPage(Integer userId, String userName, Integer rating, Pageable pageable) {
+        Specification<Review> spec = Specification.where(ReviewSpecifications.hasUserId(userId)
+                .and(ReviewSpecifications.hasUserUserName(userName))
+                .and(ReviewSpecifications.hasRating(rating)));
+        return reviewRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public Page<Review> getReviewByUserIdPageable(int userId, Pageable pageable) {
+        List<Review> reviews = reviewRepository.findByUserId(userId);
+        return new PageImpl<>(reviews, pageable, reviews.size());
+    }
+
+    @Override
+    public Review updateReviewByID(ReviewDTO reviewDTO, int id) {
+
+        Review existingReview = reviewRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("Review", "Id", id));
+        existingReview.setRating(reviewDTO.getRating());
+        existingReview.setContent(reviewDTO.getContent());
+        existingReview.setUpdatedAt(LocalDateTime.now());
+        return reviewRepository.save(existingReview);
+    }
+
+    @Override
+    public void deleteReviewByID(int id) {
+        reviewRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("Review", "Id", id));
+        reviewRepository.deleteById(id);
+    }
+}

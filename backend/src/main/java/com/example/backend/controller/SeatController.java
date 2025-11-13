@@ -1,0 +1,197 @@
+package com.example.backend.controller;
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import com.example.backend.dto.LogDTO;
+import com.example.backend.dto.SeatCheckRequest;
+import com.example.backend.dto.SeatDTO;
+import com.example.backend.exception.ResourceNotFoundException;
+import com.example.backend.model.Seat;
+import com.example.backend.service.LogService;
+import com.example.backend.service.SeatService;
+import com.example.backend.utils.JwtTokenUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("api/seat")
+@CrossOrigin("http://localhost:3000")
+public class SeatController {
+    private SeatService seatService;
+    @Autowired
+    private JwtTokenUtils jwtTokenUtils;
+    @Autowired
+    private LogService logService;
+
+    public SeatController(SeatService seatService) {
+        this.seatService = seatService;
+    }
+
+    // Get all Seat
+    @GetMapping
+    public List<Seat> getAllSeats(){return seatService.getAllSeat();}
+
+    // get all seat by kindid
+    @GetMapping("/kind_vehicle/{kindVehicleId}")
+    public ResponseEntity<List<Seat>> getAllSeatsByKindVehicleId(@PathVariable ("kindVehicleId") int kindVehicleId) {
+        List<Seat> seats = seatService.getAllSeatsByKindVehicleId(kindVehicleId);
+        return ResponseEntity.ok().body(seats);
+    }
+
+    // get all seat by page
+    @GetMapping("page")
+    public ResponseEntity<Map<String, Object>> getAllSeatByPage(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) Integer kindVehicleId) {
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Seat> seatPage = seatService.getAllSeatPage(name, status, kindVehicleId, pageable);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("seats", seatPage.getContent());
+        response.put("currentPage", seatPage.getNumber() + 1);
+        response.put("totalItems", seatPage.getTotalElements());
+        response.put("totalPages", seatPage.getTotalPages());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // Create a new Seat
+    @PostMapping
+    public ResponseEntity<Seat> createSeat(@RequestBody SeatDTO seatDTO, HttpServletRequest request){
+
+        String token = jwtTokenUtils.extractJwtFromRequest(request);
+        if (token == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        if (jwtTokenUtils.isTokenExpired(token)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        int userId = jwtTokenUtils.extractUserId(token);
+        Integer userRole = jwtTokenUtils.extractRole(token);
+
+        if (userRole == null ||  (userRole != 2 && userRole != 3)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        try {
+            Seat createSeat = seatService.createSeat(seatDTO);
+
+            LogDTO logData =  logService.convertToLogDTO(userId, "Tạo ghế tên: "+ seatDTO.getName(), 1);
+            logService.createLog(logData);
+            return new ResponseEntity<>(createSeat, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Get Seat By id
+    @GetMapping("{id}")
+    public ResponseEntity<Seat> getSeatById(@PathVariable ("id") int id){
+        return new ResponseEntity<>(seatService.getSeatByID(id), HttpStatus.OK);
+    }
+
+    // Update City by id
+    @PutMapping("{id}")
+    public ResponseEntity<Seat> updateSeatById(@PathVariable ("id") int id, @RequestBody SeatDTO seatDTO, HttpServletRequest request){
+
+        String token = jwtTokenUtils.extractJwtFromRequest(request);
+        if (token == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        if (jwtTokenUtils.isTokenExpired(token)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        int userId = jwtTokenUtils.extractUserId(token);
+        Integer userRole = jwtTokenUtils.extractRole(token);
+
+        if (userRole == null ||  (userRole != 2 && userRole != 3)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        try{
+            Seat updateSeat = seatService.updateSeatByID(seatDTO, id);
+
+            LogDTO logData =  logService.convertToLogDTO(userId, "Cập nhật ghế Id: "+ id, 2);
+            logService.createLog(logData);
+            return new ResponseEntity<>(updateSeat, HttpStatus.OK);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Delete city by id
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> deleteSeatById(@PathVariable ("id") int id, HttpServletRequest request){
+        String token = jwtTokenUtils.extractJwtFromRequest(request);
+        if (token == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        if (jwtTokenUtils.isTokenExpired(token)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        int userId = jwtTokenUtils.extractUserId(token);
+        Integer userRole = jwtTokenUtils.extractRole(token);
+
+        if (userRole == null ||  (userRole != 2 && userRole != 3)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        try {
+            seatService.deleteSeatByID(id);
+
+            // Ghi log sau khi hành động thành công
+            LogDTO logData =  logService.convertToLogDTO(userId, "Xóa ghế Id: "+ id, 2);
+            logService.createLog(logData);
+
+            return new ResponseEntity<>("Seat " + id + " is deleted successfully", HttpStatus.OK);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>("Seat " + id + " not found", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/trip/{tripId}/kindVehicle/{kindVehicleId}")
+    public List<SeatDTO> getSeats(@PathVariable int tripId,
+                                  @PathVariable int kindVehicleId) {
+        return seatService.getSeatsByTrip(tripId, kindVehicleId);
+    }
+
+    // API kiểm tra ghế cả lượt đi và lượt về
+    @PostMapping("/check-roundtrip")
+    public ResponseEntity<Map<String, Object>> checkSeatsRoundTrip(
+            @RequestBody SeatCheckRequest request) {
+
+        boolean conflictedTrip = seatService.checkSeatsConflict(
+                request.getTripId(), request.getSeatIds());
+        boolean conflictedTripReturn = seatService.checkSeatsConflict(
+                request.getTripIdReturn(), request.getSeatIdsReturn());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("conflictedTrip", conflictedTrip);
+        response.put("conflictedTripReturn", conflictedTripReturn);
+        response.put("conflicted", conflictedTrip || conflictedTripReturn);
+        response.put("message", (conflictedTrip || conflictedTripReturn) ?
+                "Một hoặc nhiều ghế đã được đặt/chờ đặt." :
+                "Tất cả ghế đều khả dụng.");
+
+        return ResponseEntity.ok(response);
+    }
+}

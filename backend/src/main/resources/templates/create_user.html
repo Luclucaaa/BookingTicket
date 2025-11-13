@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tài khoản được tạo bởi quản trị viên</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f6f9fc; margin: 0; padding: 0;">
+<table align="center" width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 8px rgba(0,0,0,0.1); margin: 30px auto; padding: 20px;">
+    <tr>
+        <td style="text-align: center; padding: 10px 0;">
+            <h2 style="color: #007bff; margin: 0;">Xin chào, <span th:text="${name}">Người dùng</span>!</h2>
+            <p style="color: #333; font-size: 16px; margin: 10px 0 20px 0;">
+                Tài khoản của bạn đã được <b>quản trị viên</b> tạo thành công trên hệ thống <b>RoadLine Booking</b>.
+            </p>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="padding: 15px;">
+            <div style="background-color: #f0f4ff; border-left: 5px solid #007bff; padding: 15px; border-radius: 5px;">
+                <p style="margin: 0; font-size: 15px;">
+                    <b>Thông tin đăng nhập của bạn:</b><br>
+                    <span>Email:</span> <b th:text="${email}">example@gmail.com</b><br>
+                    <span>Mật khẩu tạm thời:</span>
+                    <b style="color: #d63384;" th:text="${password}">abc12345</b>
+                </p>
+            </div>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="padding: 15px;">
+            <p style="font-size: 15px; color: #444;">
+                Vui lòng đăng nhập bằng mật khẩu tạm thời ở trên, sau đó đổi mật khẩu để đảm bảo an toàn.
+            </p>
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="https://roadlinebooking.com/login"
+                   style="background-color: #007bff; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+                    Đăng nhập ngay
+                </a>
+            </div>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="text-align: center; color: #888; font-size: 13px; padding: 20px 10px 10px;">
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            © 2025 RoadLine Booking. Mọi quyền được bảo lưu.<br>
+            Đây là email tự động, vui lòng không trả lời.
+        </td>
+    </tr>
+</table>
+</body>
+</html>
