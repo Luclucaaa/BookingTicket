@@ -449,14 +449,6 @@ const BookingTicket = () => {
               </p>
 
               <div className="payment-actions">
-                <button
-                  className="btn vnpay"
-                  onClick={() => handlePayment("VNPAY")}
-                >
-                  <span className="vnpay-red">VN</span>
-                  <span className="vnpay-blue">PAY</span>
-                </button>
-
                 {userId && (
                   <button
                     className="btn cod"
@@ -465,6 +457,14 @@ const BookingTicket = () => {
                     Thanh toán khi lên xe
                   </button>
                 )}
+
+                <button
+                  className="btn vnpay"
+                  onClick={() => handlePayment("VNPAY")}
+                >
+                  <span className="vnpay-red">VN</span>
+                  <span className="vnpay-blue">PAY</span>
+                </button>
               </div>
             </div>
           </div>

@@ -132,27 +132,46 @@ const Register = () => {
       setIsLoading(true);
       const result = await sendRequest(REGISTER, "POST", registerUser);
 
-      // 🔹 Một số API trả về text, nên kiểm tra kết quả thủ công nếu cần
+      // 🔹 Backend trả về String hoặc Number (userId)
       if (typeof result === "string") {
+        // Trường hợp lỗi
         if (result === "Email đã tồn tại") {
           toast.error("Email đã tồn tại");
           return;
         }
-        if (isNaN(parseInt(result))) {
-          toast.error(result);
+        
+        if (result.includes("gửi email xác nhận thất bại")) {
+          toast.warning(result);
           return;
         }
 
-        navigate("/confirm-account", {
-          state: { userId: parseInt(result) },
-        });
-      } else {
-        // Nếu API trả JSON object
-        if (result?.id) {
-          navigate("/confirm-account", { state: { userId: result.id } });
-        } else {
+        // Trường hợp thành công - result là userId dạng string
+        const userId = parseInt(result);
+        console.log("✅ Parsed userId from string:", userId);
+        if (!isNaN(userId)) {
           toast.success("Đăng ký thành công! Vui lòng xác nhận email.");
+          console.log("🚀 Navigating to /confirm-account with userId:", userId);
+          navigate("/confirm-account", { state: { userId } });
+          return;
         }
+
+        // Trường hợp khác
+        console.log("⚠️ Unknown response:", result);
+        toast.error(result);
+      } else if (typeof result === "number") {
+        // 🔹 Trường hợp API trả về number trực tiếp
+        console.log("✅ Number response (userId):", result);
+        toast.success("Đăng ký thành công! Vui lòng xác nhận email.");
+        console.log("🚀 Navigating to /confirm-account with userId:", result);
+        navigate("/confirm-account", { state: { userId: result } });
+      } else if (result?.id) {
+        // Nếu API trả JSON object (fallback)
+        console.log("✅ JSON response with id:", result.id);
+        toast.success("Đăng ký thành công! Vui lòng xác nhận email.");
+        navigate("/confirm-account", { state: { userId: result.id } });
+      } else {
+        console.log("❓ Unexpected response format:", result);
+        toast.error("Phản hồi từ server không hợp lệ");
       }
     } catch (err) {
       console.error("❌ Register error:", err);

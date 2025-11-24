@@ -65,18 +65,45 @@ export const sendRequest = async (
 
     if (!response.ok) {
       const errorText = await response.text();
+      
+      // ⚠️ Không hiển thị toast cho endpoint token (401 là bình thường khi chưa login Google)
+      if (url.includes("/api/user/token") && response.status === 401) {
+        throw new Error(errorText || "Token không tồn tại");
+      }
+      
       throw new Error(errorText || `Lỗi ${method} tại ${url}`);
     }
 
-    // Một số API (DELETE) có thể không trả JSON
-    try {
+    // ✅ Kiểm tra Content-Type để xử lý đúng
+    const contentType = response.headers.get("content-type");
+    
+    // Nếu response trả về JSON
+    if (contentType && contentType.includes("application/json")) {
       return await response.json();
-    } catch {
+    }
+    
+    // Nếu response trả về text/plain hoặc không có content-type
+    const textResponse = await response.text();
+    
+    // Nếu text rỗng (DELETE thường trả về empty)
+    if (!textResponse) {
       return {};
+    }
+    
+    // Thử parse JSON, nếu thất bại thì trả về text
+    try {
+      return JSON.parse(textResponse);
+    } catch {
+      return textResponse; // Trả về string nguyên bản
     }
   } catch (error) {
     console.error("❌ API Error:", error);
-    toast.error(error.message || "Lỗi kết nối máy chủ!");
+    
+    // ⚠️ Không hiển thị toast cho endpoint token
+    if (!error.message?.includes("Token không tồn tại")) {
+      toast.error(error.message || "Lỗi kết nối máy chủ!");
+    }
+    
     throw error;
   }
 };

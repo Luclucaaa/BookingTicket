@@ -110,11 +110,13 @@ const Login = () => {
       if (redirectPath) {
         navigate(redirectPath);
         sessionStorage.removeItem("redirectPath");
+        window.location.reload(); // Reload để cập nhật Navbar
       } else if ([2, 3].includes(decodedToken.role)) {
         navigate("/admin");
         window.location.reload();
       } else {
         navigate("/");
+        window.location.reload(); // Reload để cập nhật Navbar
       }
     } catch (err) {
       console.error("❌ Login error:", err);

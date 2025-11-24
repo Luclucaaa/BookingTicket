@@ -54,7 +54,7 @@ const ConfirmAccount = () => {
       setIsLoading(true);
 
       // 📨 Gọi API xác nhận tài khoản
-      const response = await sendRequest(CONFIRM_ACCOUNT(), "POST", {
+      const response = await sendRequest(CONFIRM_ACCOUNT, "POST", {
         userId,
         token: confirmCode.trim(),
       });

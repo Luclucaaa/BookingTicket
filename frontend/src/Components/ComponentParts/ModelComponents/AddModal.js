@@ -98,7 +98,9 @@ const AddModal = ({
       finalData.status = 1;
     }
     if (formData.newImage) {
-      finalData.file = formData.newImage; // thêm file mới
+      finalData.imgUrl = formData.newImage; // thêm file mới vào imgUrl
+      delete finalData.newImage; // xóa newImage khỏi data
+      delete finalData.newImagePreview; // xóa preview
     }
     console.log("finalData", finalData);
     onSave(finalData);

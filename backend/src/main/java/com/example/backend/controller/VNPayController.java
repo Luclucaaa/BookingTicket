@@ -232,7 +232,7 @@ public void paymentCallbackBooking(@RequestParam Map<String, String> queryParams
         vnp_Params.put("vnp_OrderType", orderType);
 
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_ReturnUrl);
+        vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_ReturnUrl + "?bookingId=" + bookingId);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
         TimeZone timeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh");

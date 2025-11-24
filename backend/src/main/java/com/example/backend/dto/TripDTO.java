@@ -12,6 +12,8 @@ import java.time.LocalTime;
 public class TripDTO {
     private int id;
     private int routeId;
+    private int diemDiId;    // Điểm đi
+    private int diemDenId;   // Điểm đến
     private int vehicleId;
     private LocalDate dayStart;
     private LocalTime timeStart;

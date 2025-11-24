@@ -20,6 +20,7 @@ import {
   CREATE_TRIP,
   GET_ALL_KIND_VEHICLE,
   GET_ALL_ROUTES,
+  GET_ALL_CITIES,
   GET_DRIVER_AVAILABLE_FOR_DAYSTART,
   GET_SEAT_RESERVATION_BY_TRIP_ID,
   GET_TRIP_BY_ID,
@@ -35,6 +36,7 @@ const AdminTrip = () => {
   const [vehicleOfKind, setVehicleOfKind] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [routes, setRoutes] = useState([]);
+  const [cities, setCities] = useState([]);
   const [records, setRecords] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -110,6 +112,15 @@ const AdminTrip = () => {
     }
   }, []);
 
+  const fetchCities = useCallback(async () => {
+    try {
+      const data = await sendRequest(GET_ALL_CITIES, "GET");
+      setCities(data);
+    } catch (error) {
+      console.error("Error fetching cities:", error);
+    }
+  }, []);
+
   const fetchDrivers = useCallback(async (dayStart) => {
     try {
       const data = await sendRequest(
@@ -134,14 +145,15 @@ const AdminTrip = () => {
     const fetchData = async () => {
       // if (!searchDebounce) return;
       // Gọi các API đồng thời để tiết kiệm thời gian
-      const [tripsData, routesData, kindVehicleData] = await Promise.all([
+      const [tripsData, routesData, kindVehicleData, citiesData] = await Promise.all([
         fetchTrips(searchDebounce, searchCriteria),
         fetchRoutes(),
         fetchKindVehicles(),
+        fetchCities(),
       ]);
 
       // Nếu cần, có thể xử lý dữ liệu trả về ở đây
-      if (tripsData && routesData && kindVehicleData) {
+      if (tripsData && routesData && kindVehicleData && citiesData) {
         // Dữ liệu đã được xử lý và set ở trên
       }
     };
@@ -157,7 +169,13 @@ const AdminTrip = () => {
     fetchDrivers,
   ]);
   const handleEditClick = (trip) => {
-    setCurrentTrip(trip);
+    // Thêm diemDiId và diemDenId vào currentTrip
+    const tripWithDiem = {
+      ...trip,
+      diemDiId: trip.route?.diemDi?.id,
+      diemDenId: trip.route?.diemDen?.id,
+    };
+    setCurrentTrip(tripWithDiem);
     setIsEditing(true);
 
     // Gọi API lấy xe sẵn cho kindVehicle và dayStart hiện tại của trip
@@ -192,7 +210,8 @@ const AdminTrip = () => {
     // Validate dữ liệu đầu vào
     if (
       !validateFields({
-        "Tên chuyến đi": newTrip.routeId,
+        "Điểm bắt đầu": newTrip.diemDiId,
+        "Điểm kết thúc": newTrip.diemDenId,
         "Ngày khởi hành": newTrip.dayStart,
         "Thời gian khởi hành": newTrip.timeStart,
         "Loại xe": newTrip.kindVehicleId,
@@ -202,8 +221,16 @@ const AdminTrip = () => {
       })
     )
       return;
+      
+    // Kiểm tra 2 điểm phải khác nhau
+    if (newTrip.diemDiId === newTrip.diemDenId) {
+      toast.error("Điểm bắt đầu và điểm kết thúc phải khác nhau!");
+      return;
+    }
+      
     const newTripData = {
-      routeId: newTrip.routeId,
+      diemDiId: newTrip.diemDiId,
+      diemDenId: newTrip.diemDenId,
       dayStart: newTrip.dayStart,
       timeStart: newTrip.timeStart,
       kindVehicleId: newTrip.kindVehicleId,
@@ -230,7 +257,8 @@ const AdminTrip = () => {
   const handleUpdateTrip = async (updateTrip) => {
     if (
       !validateFields({
-        "Tên chuyến đi": updateTrip.routeId,
+        "Điểm bắt đầu": updateTrip.diemDiId,
+        "Điểm kết thúc": updateTrip.diemDenId,
         "Ngày khởi hành": updateTrip.dayStart,
         "Thời gian khởi hành": updateTrip.timeStart,
         "Loại xe": updateTrip.kindVehicleId,
@@ -240,8 +268,16 @@ const AdminTrip = () => {
       })
     )
       return;
+      
+    // Kiểm tra 2 điểm phải khác nhau
+    if (updateTrip.diemDiId === updateTrip.diemDenId) {
+      toast.error("Điểm bắt đầu và điểm kết thúc phải khác nhau!");
+      return;
+    }
+      
     const updateTripData = {
-      routeId: updateTrip.routeId,
+      diemDiId: updateTrip.diemDiId,
+      diemDenId: updateTrip.diemDenId,
       dayStart: updateTrip.dayStart,
       timeStart: updateTrip.timeStart,
       kindVehicleId: updateTrip.kindVehicleId,
@@ -294,19 +330,27 @@ const AdminTrip = () => {
   const searchOptions = tripFields.map((field) => {
     if (field.type === "select") {
       if (field.key === "routeId") {
-        // 🔹 Gắn danh sách loại xe
+        // 🔹 Gắn danh sách tuyến
         return { ...field, value: field.key, options: routes };
+      }
+      if (field.key === "diemDiId") {
+        // 🔹 Gắn danh sách thành phố cho điểm đi
+        return { ...field, value: field.key, options: cities };
+      }
+      if (field.key === "diemDenId") {
+        // 🔹 Gắn danh sách thành phố cho điểm đến
+        return { ...field, value: field.key, options: cities };
       }
       if (field.key === "kindVehicleId") {
         // 🔹 Gắn danh sách loại xe
         return { ...field, value: field.key, options: kindVehicledata };
       }
       if (field.key === "vehicleId") {
-        // 🔹 Gắn danh sách loại xe
+        // 🔹 Gắn danh sách xe
         return { ...field, value: field.key, options: vehicleOfKind };
       }
       if (field.key === "driverId") {
-        // 🔹 Gắn danh sách loại xe
+        // 🔹 Gắn danh sách tài xế
         return { ...field, value: field.key, options: drivers };
       }
 

@@ -94,14 +94,14 @@ function AdminHome() {
           sendRequest(GET_COUNT_CANCELLED_BY_MONTH(currentMonth)),
         ]);
 
-        setTotalDay(dayData);
-        setTotalMonth(monthData);
-        setTotalUser(userData);
-        setTotalBill(billData);
-        setTotalAll(allData);
+        setTotalDay(Number(dayData) || 0);
+        setTotalMonth(Number(monthData) || 0);
+        setTotalUser(Number(userData) || 0);
+        setTotalBill(Number(billData) || 0);
+        setTotalAll(Number(allData) || 0);
         setTotalNineMonth(nineMonthData);
-        setPaidBookingsCount(paidCount);
-        setCancelledBookingsCount(cancelledCount);
+        setPaidBookingsCount(Number(paidCount) || 0);
+        setCancelledBookingsCount(Number(cancelledCount) || 0);
       } catch (error) {
         console.error("❌ Lỗi khi tải dữ liệu Dashboard:", error);
         toast.error("Không thể tải dữ liệu Dashboard!");

@@ -234,8 +234,9 @@ public class BookingSeviceImpl implements BookingService {
 
     @Override
     public List<MonthlyRevenueDTO> getRevenueForLastNineMonths() {
+        // Thống kê từ tháng 9/2025 đến hiện tại
         LocalDateTime endDate = LocalDateTime.now();
-        LocalDateTime startDate = endDate.minusMonths(8).withDayOfMonth(1).toLocalDate().atStartOfDay();
+        LocalDateTime startDate = LocalDateTime.of(2025, 9, 1, 0, 0, 0);
 
         List<MonthlyRevenueDTO> revenues = bookingRepository.findRevenueForLastNineMonths(startDate, endDate);
 
@@ -245,12 +246,14 @@ public class BookingSeviceImpl implements BookingService {
                         r -> YearMonth.of(r.getYear(), r.getMonth()),
                         MonthlyRevenueDTO::getRevenue));
 
-        // Tạo danh sách kết quả cuối cùng với các tháng đầy đủ theo thứ tự từ quá khứ đến hiện tại
+        // Tạo danh sách kết quả cuối cùng từ tháng 9/2025 đến hiện tại
         List<MonthlyRevenueDTO> result = new ArrayList<>();
-        for (int i = 8; i >= 0; i--) {
-            YearMonth yearMonth = YearMonth.now().minusMonths(i);
-            double revenue = revenueMap.getOrDefault(yearMonth, 0);
-            result.add(new MonthlyRevenueDTO(yearMonth.getMonthValue(), (int) revenue, yearMonth.getYear()));
+        YearMonth start = YearMonth.of(2025, 9);
+        YearMonth current = YearMonth.now();
+        
+        for (YearMonth ym = start; !ym.isAfter(current); ym = ym.plusMonths(1)) {
+            double revenue = revenueMap.getOrDefault(ym, 0);
+            result.add(new MonthlyRevenueDTO(ym.getMonthValue(), (int) revenue, ym.getYear()));
         }
 
         return result;

@@ -17,6 +17,7 @@ import {
   CHECK_SEAT_ROUNDTRIP,
   CREATE_BOOKING_FOR_EMPLOYEE,
   CHECK_PROMOTION,
+  PAY_VNPAY,
 } from "../../../../Utils/apiUrls";
 
 const AdminPay = () => {
@@ -299,7 +300,7 @@ const AdminPay = () => {
       noteReturn: noteReturn,
 
       kindPay,
-      isPaid: 1,
+      isPaid: kindPay === "CASH" ? 1 : 0, // CASH: paid ngay, VNPAY: chờ callback
     };
   };
 
@@ -332,6 +333,31 @@ const AdminPay = () => {
             state: { bookingId: createdBooking.id, kind },
           });
         }, 1500);
+      }
+
+      // 3️⃣ Nếu chọn thanh toán online qua VNPAY
+      else if (method === "VNPAY") {
+        const bookingRequest = buildBookingRequest("VNPAY");
+
+        // 📝 Gửi request tạo booking tạm
+        const createdBooking = await sendRequest(
+          CREATE_BOOKING_FOR_EMPLOYEE,
+          "POST",
+          bookingRequest
+        );
+
+        // 🧠 Lưu dữ liệu để xử lý callback
+        localStorage.setItem("bookingId", createdBooking.id);
+        localStorage.setItem("bookingDetails", JSON.stringify(bookingRequest));
+
+        // 💳 Gọi API tạo URL thanh toán
+        const paymentUrl = await sendRequest(
+          PAY_VNPAY(finalPrice, createdBooking.id),
+          "GET"
+        );
+
+        // 🚀 Chuyển hướng tới cổng VNPay
+        window.location.href = paymentUrl;
       }
     } catch (error) {
       console.error("❌ Error during payment:", error);
@@ -399,14 +425,20 @@ const AdminPay = () => {
               </p>
 
               <div className="payment-actions">
-                {userId && (
-                  <button
-                    className="btn cod"
-                    onClick={() => handlePayment("COD")}
-                  >
-                    Thanh toán khi lên xe
-                  </button>
-                )}
+                <button
+                  className="btn cod"
+                  onClick={() => handlePayment("COD")}
+                >
+                  Thanh toán khi lên xe
+                </button>
+
+                <button
+                  className="btn vnpay"
+                  onClick={() => handlePayment("VNPAY")}
+                >
+                  <span className="vnpay-red">VN</span>
+                  <span className="vnpay-blue">PAY</span>
+                </button>
               </div>
             </div>
           </div>

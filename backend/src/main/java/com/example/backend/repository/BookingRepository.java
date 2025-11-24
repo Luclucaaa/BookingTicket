@@ -29,7 +29,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer>, JpaS
     Integer findTotalRevenueByMonth(@Param("year") int year, @Param("month") int month);
 
     // list doanh thu theo 9 tháng
-    @Query(value = "SELECT new vn.edu.hcmuaf.fit.backend.bookingticket_backend.dto.MonthlyRevenueDTO(EXTRACT(MONTH FROM b.dayBook), CAST(SUM(b.total) AS int), EXTRACT(YEAR FROM b.dayBook)) " +
+    @Query(value = "SELECT new com.example.backend.dto.MonthlyRevenueDTO(EXTRACT(MONTH FROM b.dayBook), CAST(SUM(b.total) AS int), EXTRACT(YEAR FROM b.dayBook)) " +
             "FROM Booking b " +
             "WHERE b.dayBook BETWEEN :startDate AND :endDate AND b.isPaid = 1" +
             "GROUP BY EXTRACT(YEAR FROM b.dayBook), EXTRACT(MONTH FROM b.dayBook) " +

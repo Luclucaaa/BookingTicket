@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.backend.model.Trip;
 import com.example.backend.model.WaitingSeat;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,4 +24,9 @@ public interface WaitingSeatRepository extends JpaRepository<WaitingSeat, Intege
     void deleteByTripIdAndSeatIds(@Param("tripId") int tripId, @Param("seatIds") List<Integer> seatIds);
     // Xóa WaitingSeat theo tripId và seatId
     void deleteByTrip_IdAndSeat_Id(int tripId, int seatId);
+    
+    // Xóa WaitingSeat hết hạn (quá thời gian cho phép)
+    @Modifying
+    @Transactional
+    void deleteByCreatedAtBefore(LocalDateTime expiredTime);
 }

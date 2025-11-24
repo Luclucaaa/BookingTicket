@@ -115,7 +115,9 @@ const EditModal = ({
     if (!finalData.status) finalData.status = 1;
     // Gửi ISO 8601 trực tiếp, backend Spring Boot parse được LocalDateTime
     if (formData.newImage) {
-      finalData.file = formData.newImage; // thêm file mới
+      finalData.imgUrl = formData.newImage; // thêm file mới vào imgUrl
+      delete finalData.newImage; // xóa newImage khỏi data
+      delete finalData.newImagePreview; // xóa preview
     }
     onSave(finalData);
   };

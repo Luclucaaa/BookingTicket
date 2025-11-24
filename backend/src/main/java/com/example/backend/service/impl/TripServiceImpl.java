@@ -9,6 +9,7 @@ import com.example.backend.dto.TripDTO;
 import com.example.backend.dto.TripSearchDTO;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.*;
+import com.example.backend.repository.CityRepository;
 import com.example.backend.repository.DriverRepository;
 import com.example.backend.repository.RouteRepository;
 import com.example.backend.repository.TripRepository;
@@ -21,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,23 +31,62 @@ public class TripServiceImpl implements TripService {
     private RouteRepository routeRepository;
     private VehicleRepository vehicleRepository;
     private DriverRepository driverRepository;
+    private CityRepository cityRepository;
 
 //    public TripServiceImpl(TripRepository tripRepository) {
 //        this.tripRepository = tripRepository;
 //    }
 
-    public TripServiceImpl(TripRepository tripRepository, RouteRepository routeRepository, VehicleRepository vehicleRepository, DriverRepository driverRepository) {
+    public TripServiceImpl(TripRepository tripRepository, RouteRepository routeRepository, VehicleRepository vehicleRepository, DriverRepository driverRepository, CityRepository cityRepository) {
         this.tripRepository = tripRepository;
         this.routeRepository = routeRepository;
         this.vehicleRepository = vehicleRepository;
         this.driverRepository = driverRepository;
+        this.cityRepository = cityRepository;
     }
 
     @Override
     public Trip createTrip(TripDTO tripDTO) {
         Trip trip = new Trip();
-        Route route =  routeRepository.findById(tripDTO.getRouteId()).orElseThrow(() ->
-                new ResourceNotFoundException("Route", "Id", tripDTO.getRouteId()));
+        Route route;
+        
+        // ✅ Nếu có diemDiId và diemDenId, tự động tìm hoặc tạo route
+        if (tripDTO.getDiemDiId() > 0 && tripDTO.getDiemDenId() > 0) {
+            // Kiểm tra 2 điểm phải khác nhau
+            if (tripDTO.getDiemDiId() == tripDTO.getDiemDenId()) {
+                throw new IllegalArgumentException("Điểm đi và điểm đến phải khác nhau!");
+            }
+            
+            // Tìm route đã tồn tại
+            Optional<Route> existingRoute = routeRepository.findByDiemDi_IdAndDiemDen_Id(
+                tripDTO.getDiemDiId(), 
+                tripDTO.getDiemDenId()
+            );
+            
+            if (existingRoute.isPresent()) {
+                route = existingRoute.get();
+            } else {
+                // Tạo route mới
+                City diemDi = cityRepository.findById(tripDTO.getDiemDiId())
+                    .orElseThrow(() -> new ResourceNotFoundException("City", "Id", tripDTO.getDiemDiId()));
+                City diemDen = cityRepository.findById(tripDTO.getDiemDenId())
+                    .orElseThrow(() -> new ResourceNotFoundException("City", "Id", tripDTO.getDiemDenId()));
+                
+                route = new Route();
+                route.setDiemDi(diemDi);
+                route.setDiemDen(diemDen);
+                route.setName(diemDi.getName() + " - " + diemDen.getName());
+                route.setStatus(1); // Mặc định trạng thái hoạt động
+                route = routeRepository.save(route);
+            }
+        } else if (tripDTO.getRouteId() > 0) {
+            // ✅ Nếu có routeId (để tương thích ngược)
+            route = routeRepository.findById(tripDTO.getRouteId()).orElseThrow(() ->
+                    new ResourceNotFoundException("Route", "Id", tripDTO.getRouteId()));
+        } else {
+            throw new IllegalArgumentException("Phải cung cấp diemDiId và diemDenId hoặc routeId!");
+        }
+        
         Vehicle vehicle =  vehicleRepository.findById(tripDTO.getVehicleId()).orElseThrow(() ->
                 new ResourceNotFoundException("Vehicle", "Id", tripDTO.getVehicleId()));
         Driver driver =  driverRepository.findById(tripDTO.getDriverId()).orElseThrow(() ->

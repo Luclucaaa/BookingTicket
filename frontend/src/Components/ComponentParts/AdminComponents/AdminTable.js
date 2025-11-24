@@ -114,7 +114,7 @@ const AdminTable = ({
 
                   return (
                     <td key={col.key}>
-                      {col.cell ? col.cell(item) : cellValue}
+                      {col.cell ? col.cell(item, index) : cellValue}
                     </td>
                   );
                 })}

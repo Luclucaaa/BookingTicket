@@ -149,7 +149,7 @@ const AppContent = () => {
             />
             <Route
               path="/admin/cities"
-              element={userRole === 3 ? <AdminCity /> : <NotFoundPage />}
+              element={userRole === 2 || userRole === 3 ? <AdminCity /> : <NotFoundPage />}
             />
             <Route path="/admin/booking-trip" element={<AdminPay />} />
             <Route

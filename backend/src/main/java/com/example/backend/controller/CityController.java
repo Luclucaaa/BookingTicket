@@ -8,18 +8,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import com.example.backend.dto.CityDTO;
 import com.example.backend.dto.LogDTO;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.City;
-import com.example.backend.model.Seat;
 import com.example.backend.service.CityService;
 import com.example.backend.service.LogService;
 import com.example.backend.utils.JwtTokenUtils;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +40,7 @@ public class CityController {
 
     // Create a new City
     @PostMapping
-    public ResponseEntity<City> createCity(@RequestPart("city") CityDTO cityDTO, @RequestPart(value = "file", required = false) MultipartFile file, HttpServletRequest request) {
+    public ResponseEntity<City> createCity(@RequestBody CityDTO cityDTO, HttpServletRequest request) {
         String token = jwtTokenUtils.extractJwtFromRequest(request);
         if (token == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -60,15 +56,13 @@ public class CityController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         try {
-            City city = cityService.createCity(cityDTO, file);
+            City city = cityService.createCity(cityDTO);
 
             LogDTO logData =  logService.convertToLogDTO(userId, "Tạo thành phố tên: "+ cityDTO.getName(), 1);
             logService.createLog(logData);
             return new ResponseEntity<>(city, HttpStatus.CREATED);
-        } catch (IOException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -98,8 +92,7 @@ public class CityController {
     // Update City by id
     @PutMapping("{id}")
     public ResponseEntity<City> updateCityById(@PathVariable("id") int id,
-                                               @RequestPart("city") CityDTO cityDTO,
-                                               @RequestPart(value = "file", required = false) MultipartFile file,
+                                               @RequestBody CityDTO cityDTO,
                                                HttpServletRequest request) {
         String token = jwtTokenUtils.extractJwtFromRequest(request);
 
@@ -114,17 +107,13 @@ public class CityController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         try {
-            City updatedCity = cityService.updateCityByID(cityDTO, file, id);
+            City updatedCity = cityService.updateCityByID(cityDTO, id);
 
             LogDTO logData =  logService.convertToLogDTO(userId, "Cập nhật Thành phố Id: "+ id, 2);
             logService.createLog(logData);
             return new ResponseEntity<>(updatedCity, HttpStatus.OK);
         } catch (ResourceNotFoundException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException(e);
         }
     }
 

@@ -53,7 +53,7 @@ const statusDriverMap = {
 };
 
 export const driverFields = [
-  { key: "name", label: "Tên", type: "text" },
+  { key: "name", label: "Họ và tên", type: "text" },
   { key: "email", label: "Email", type: "text" },
   { key: "phone", label: "Số điện thoại", type: "text" },
   {
@@ -65,10 +65,14 @@ export const driverFields = [
 ];
 
 export const driverColumn = [
-  { key: "id", label: "ID" },
-  { key: "name", label: "Tên tài xế" },
-  { key: "email", label: "Địa chỉ Email" },
-  { key: "phone", label: "Số điện thoại" },
+  { 
+    key: "stt", 
+    label: "STT",
+    cell: (row, index) => <div style={{ textAlign: "center" }}>{index + 1}</div>
+  },
+  { key: "name", label: "Họ và tên" },
+  { key: "email", label: "Email" },
+  { key: "phone", label: "SĐT" },
   { key: "status", label: "Trạng thái" },
 ];
 
@@ -224,20 +228,12 @@ export const seatReservationField = [
 
 /* ============ COLUMN CITY ============ */
 export const cityColumn = [
-  { key: "id", label: "ID" },
-  { key: "name", label: "Tên thành phố" },
-  {
-    key: "imgUrl",
-    label: "Ảnh",
-    cell: (row) => (
-      <img
-        src={row.imgUrl}
-        alt={row.name}
-        height="50"
-        style={{ borderRadius: "8px" }}
-      />
-    ),
+  { 
+    key: "stt", 
+    label: "STT",
+    cell: (row, index) => <div style={{ textAlign: "center" }}>{index + 1}</div>
   },
+  { key: "name", label: "Tên thành phố" },
 ];
 
 /* ============ COLUMN ROUTE ============ */
@@ -336,7 +332,8 @@ export const tripColumn = [
   { key: "status", label: "Trạng thái" },
 ];
 export const tripFields = [
-  { key: "routeId", label: "Tên chuyến đi", type: "select" },
+  { key: "diemDiId", label: "Điểm bắt đầu", type: "select" },
+  { key: "diemDenId", label: "Điểm kết thúc", type: "select" },
   { key: "dayStart", label: "Ngày khởi hành", type: "date" },
   { key: "timeStart", label: "Thời gian khởi hành", type: "time" },
   { key: "kindVehicleId", label: "Loại xe", type: "select" },

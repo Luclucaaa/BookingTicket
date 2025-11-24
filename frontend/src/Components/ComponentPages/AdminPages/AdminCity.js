@@ -77,21 +77,15 @@ const AdminCity = () => {
       })
     )
       return;
+      
     const newCityData = {
       name: newCity.name,
     };
-    const formData = new FormData();
-    formData.append(
-      "city",
-      new Blob([JSON.stringify(newCityData)], { type: "application/json" })
-    );
-    if (newCity.file) {
-      formData.append("file", newCity.file);
-    }
+    
     try {
       setIsLoading(true);
-      // Gửi request tạo loại xe
-      const created = await sendRequest(CREATE_CITY, "POST", formData);
+      // Gửi request tạo thành phố
+      const created = await sendRequest(CREATE_CITY, "POST", newCityData);
 
       // Hiển thị thông báo & cập nhật danh sách
       toast.success("Thành phố mới đã được tạo thành công!");
@@ -99,6 +93,7 @@ const AdminCity = () => {
       setIsAdd(false);
     } catch (error) {
       console.error("Lỗi khi tạo thành phố:", error);
+      toast.error("Không thể tạo thành phố. Vui lòng thử lại!");
     } finally {
       setIsLoading(false);
     }
@@ -111,24 +106,18 @@ const AdminCity = () => {
       })
     )
       return;
+      
     const updatedCityData = {
       name: updatedCity.name,
     };
-    const formData = new FormData();
-    formData.append(
-      "city",
-      new Blob([JSON.stringify(updatedCityData)], { type: "application/json" })
-    );
-    if (updatedCity.file) {
-      formData.append("file", updatedCity.file);
-    }
+    
     try {
       setIsLoading(true);
-      // Gửi request tạo loại xe
+      // Gửi request cập nhật thành phố
       const updated = await sendRequest(
         GET_CITY_BY_ID(updatedCity.id),
         "PUT",
-        formData
+        updatedCityData
       );
 
       // Hiển thị thông báo & cập nhật danh sách
@@ -139,6 +128,7 @@ const AdminCity = () => {
       setIsEditing(false);
     } catch (error) {
       console.error("Lỗi khi update thành phố:", error);
+      toast.error("Không thể cập nhật thành phố. Vui lòng thử lại!");
     } finally {
       setIsLoading(false);
     }
@@ -168,11 +158,6 @@ const AdminCity = () => {
 
   const cityField = [
     { key: "name", label: "Tên thành phố", type: "text" },
-    {
-      key: "imgUrl",
-      label: "Hình ảnh",
-      type: "file",
-    },
   ];
   return (
     <div className="main-container">

@@ -16,6 +16,7 @@ import {
   HistoryEdu,
   Map,
   AirportShuttle,
+  DriveEta,
 } from "@mui/icons-material";
 import "./AdminSidebar.scss";
 import { GET_USER_BY_ID } from "../../../../Utils/apiUrls";
@@ -36,11 +37,10 @@ const MENU_ITEMS = [
 // Admin only
 const ADMIN_MENU = [
   { path: "users", label: "Người dùng", icon: <People /> },
-  { path: "cities", label: "Thành phố", icon: <LocationCity /> },
+  { path: "drivers", label: "Tài xế", icon: <DriveEta /> },
   { path: "vehicles", label: "Phương tiện", icon: <Commute /> },
   { path: "seats", label: "Ghế ngồi", icon: <EventSeat /> },
   { path: "routes", label: "Tuyến đi", icon: <Map /> },
-  { path: "drivers", label: "Tài xế", icon: <People /> },
   { path: "catch-point", label: "Điểm đón tuyến", icon: <AirportShuttle /> },
   { path: "kind-vehicle", label: "Loại xe", icon: <Commute /> },
   { path: "logs", label: "Log", icon: <HistoryEdu /> },

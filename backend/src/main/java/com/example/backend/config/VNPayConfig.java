@@ -1,29 +1,23 @@
 package com.example.backend.config;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.*;
 
 public class VNPayConfig {
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     public static String vnp_ReturnUrl = "http://localhost:8081/api/payment/payment-callback";
     public static String vnp_ReturnUrl1 = "http://localhost:8081/api/payment/payment-callback-booking";
-    public static String vnp_TmnCode = "JJMTMTS8";
+    public static String vnp_TmnCode = "NYJFXYK2";
     public static String vnp_Version = "2.1.0";
     public static String vnp_Command = "pay";
-    public static String secretKey = "70UOO01YBK2XAC6KPO2LWTVL5TFW3TNR";
+    public static String secretKey = "U6FXVMOY57K9R536ZVOXDJFNCYR2MW4M";
     public static String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
 
 //    public static String md5(String message) {

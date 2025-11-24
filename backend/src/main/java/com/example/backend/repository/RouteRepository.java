@@ -6,8 +6,10 @@ import org.springframework.stereotype.Repository;
 import com.example.backend.model.Route;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RouteRepository extends JpaRepository<Route, Integer>, JpaSpecificationExecutor<Route> {
     List<Route> findByStatus(int status);
+    Optional<Route> findByDiemDi_IdAndDiemDen_Id(int diemDiId, int diemDenId);
 }

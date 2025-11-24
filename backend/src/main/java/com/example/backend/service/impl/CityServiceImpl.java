@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import com.example.backend.dto.CityDTO;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.CatchPoint;
@@ -16,20 +15,14 @@ import com.example.backend.repository.specification.CatchPointSpecification;
 import com.example.backend.repository.specification.CitySpecification;
 import com.example.backend.service.CityService;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.util.List;
 @Service
 public class CityServiceImpl implements CityService {
     private CityRepository cityRepository;
-    @Autowired
-    private ImageImpl image;
     private final Path fileStorageLocation = Paths.get("src/main/resources/static/img").toAbsolutePath().normalize();
 
     public CityServiceImpl(CityRepository cityRepository) {
@@ -42,23 +35,11 @@ public class CityServiceImpl implements CityService {
     }
 
     @Override
-    public City createCity(CityDTO cityDTO, MultipartFile file) throws IOException, GeneralSecurityException {
-//        String originalFileName = file.getOriginalFilename();
-//        String fileName = System.currentTimeMillis() + "_" + originalFileName;
-//        Path targetLocation = this.fileStorageLocation.resolve(fileName);
-//
-//        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-        File tempFile = File.createTempFile("temp", null);
-        file.transferTo(tempFile);
-        String ImgUrl = image.uploadImageToDrive(tempFile);
-
+    public City createCity(CityDTO cityDTO) {
         City city = new City();
         city.setName(cityDTO.getName());
-        city.setImgUrl(ImgUrl);
         city.setCreatedAt(LocalDateTime.now());
         city.setUpdatedAt(LocalDateTime.now());
-//        City savedCity = cityRepository.save(city);
-//        savedCity.setImgUrl("/static/img/" + fileName);
         return cityRepository.save(city);
     }
 
@@ -74,25 +55,11 @@ public class CityServiceImpl implements CityService {
     }
 
     @Override
-    public City updateCityByID(CityDTO cityDTO, MultipartFile file, int id) throws IOException, GeneralSecurityException {
+    public City updateCityByID(CityDTO cityDTO, int id) {
         City existingCity = cityRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("City", "Id", id));
-        // Cập nhật thông tin thành phố
         existingCity.setName(cityDTO.getName());
         existingCity.setUpdatedAt(LocalDateTime.now());
-        // Nếu có tệp ảnh mới được cung cấp, cập nhật ảnh mới
-        if (file != null) {
-//            String originalFileName = file.getOriginalFilename();
-//            String fileName = System.currentTimeMillis() + "_" + originalFileName;
-//            Path targetLocation = this.fileStorageLocation.resolve(fileName);
-//            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            File tempFile = File.createTempFile("temp", null);
-            file.transferTo(tempFile);
-            String ImgUrl = image.uploadImageToDrive(tempFile);
-
-            existingCity.setImgUrl(ImgUrl);
-        }
-
         return cityRepository.save(existingCity);
     }
 

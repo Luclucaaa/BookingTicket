@@ -34,7 +34,7 @@ const useNavbar = () => {
   }, [navigate]);
 
   const fetchToken = useCallback(async () => {
-    console.log("Kiểm tra token");
+    console.log("Kiểm tra token từ Google OAuth");
     try {
       const res = await sendRequest(GET_USER_TOKEN, "GET", null, {
         includeCredentials: true,
@@ -62,8 +62,8 @@ const useNavbar = () => {
       if (userRole === 1) navigate("/");
       else if (userRole === 2 || userRole === 3) navigate("/admin");
     } catch (err) {
-      console.error(err);
-      navigate("/login");
+      console.error("❌ Lỗi khi lấy token từ Google:", err);
+      // Không điều hướng đến login, chỉ log lỗi
     }
   }, [navigate, handleLogoutClick]);
 
@@ -78,8 +78,12 @@ const useNavbar = () => {
   }, [userId]);
 
   useEffect(() => {
-    if (localStorage.getItem("googleLogin") === "true") fetchToken();
-  }, [fetchToken]);
+    if (localStorage.getItem("googleLogin") === "true") {
+      fetchToken();
+      localStorage.removeItem("googleLogin"); // Xóa flag sau khi fetch để không gọi lại
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Chỉ chạy 1 lần khi mount
 
   useEffect(() => {
     fetchUserInfo();

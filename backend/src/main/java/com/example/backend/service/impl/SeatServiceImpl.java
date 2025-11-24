@@ -96,6 +96,11 @@ public class SeatServiceImpl implements SeatService {
         if (seatIds == null || seatIds.isEmpty()) {
             return false;
         }
+        
+        // 🔹 Xóa các WaitingSeat đã hết hạn (quá 15 phút) trước khi check
+        LocalDateTime expiredTime = LocalDateTime.now().minusMinutes(15);
+        waitingSeatRepository.deleteByCreatedAtBefore(expiredTime);
+        
         boolean existsReserved = seatReservationRepository.existsByTripIdAndSeatIdIn(tripId, seatIds);
         boolean existsWaiting = waitingSeatRepository.existsByTripIdAndSeatIdIn(tripId, seatIds);
 
